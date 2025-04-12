@@ -1,0 +1,16 @@
+# Ignore virtual env
+venv/
+
+# Ignore compiled Python files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Ignore env file with secrets
+.env
+
+# VS Code settings (optional)
+.vscode/
+
+# Output directory
+output/
