@@ -1,119 +1,137 @@
-# codesh
+# CodeSH
 
-## Project Overview
+A powerful AI-powered code generation and project scaffolding tool.
 
-Codesh is a terminal-based code file generator/project that helps developers quickly generate boilerplate code and directory structures for various programming languages.
+## Overview
+
+CodeSH is an intelligent command-line tool that helps developers:
+- Generate code in multiple programming languages
+- Create project structures and scaffolds
+- Execute and manage file operations
+- Explain and improve existing code
+- Generate tests for code
+
+The tool uses natural language processing to understand your intentions and automatically generates and executes the appropriate commands.
 
 ## Features
-- Generates code files for various programming languages
-- Customizable templates and structures
-- Easy to use from the command line
+
+- **Intelligent Command Generation**: Describe what you want in plain English, and CodeSH will generate the appropriate shell commands.
+- **Project Scaffolding**: Quickly create new projects with proper structure and configurations.
+- **Real-time Feedback**: See command execution progress in real-time, especially useful for long-running operations like dependency installation.
+- **Code Generation**: Generate code snippets or complete files based on natural language descriptions.
+- **Code Explanation**: Get detailed explanations of existing code.
+- **Code Improvement**: Suggestions for improving code quality, performance, and readability.
+- **Test Generation**: Automatically generate test cases for your code.
 
 ## Installation
 
-Follow these steps to install codesh:
-1. Clone the repository
-2. Run the installation script
+1. Clone the repository:
+```bash
+git clone https://github.com/mukulpythondev/codesh.git
+cd codesh
+```
+
+2. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+3. Set up your OpenAI API key:
+Create a `.env` file in the project root with:
+```
+OPENAI_API_KEY=your_api_key_here
+```
 
 ## Usage
 
-After installation, you can use codesh by running the following command in the terminal:
-
+1. Start CodeSH:
 ```bash
-codesh [options] <language>
+python cli/codesh.py
 ```
 
-## Usage Examples
+2. At the prompt, describe what you want to do:
+```
+> Create a React app with Vite in a folder called my-app
+```
 
-1. **Backup Files**
+3. CodeSH will analyze your request, create a plan, and execute the necessary commands with real-time feedback.
 
-   ```sh
-   codesh backup --source ~/Documents --destination /backup
-   ```
+### Example Commands
 
-2. **Quickly Compile Projects**
+Here are some examples of what you can ask CodeSH to do:
 
-   ```sh
-   codesh compile --project ~/projects/myproject
-   ```
+#### File Operations
+```
+> List files in the current directory
+> Create a new folder called projects
+> Create a file called app.py with a simple Flask hello world app
+```
 
-3. **Environment Cleanup**
+#### Project Generation
+```
+> Create a React todo app with Vite and Tailwind CSS in ./todo-app
+> Generate a Django REST API project with user authentication
+> Create a Node.js Express server with MongoDB connection
+```
 
-   ```sh
-   codesh clean --temp-files --log
-   ```
+#### Code Generation
+```
+> Generate a Python function to calculate Fibonacci numbers
+> Create a JavaScript class to manage a shopping cart
+> Write a CSS grid layout for a responsive dashboard
+```
 
-## Configuration Options
+#### Code Explanation & Improvement
+```
+> Explain this code: [paste code here]
+> Improve this code for better performance: [paste code here]
+> Optimize this SQL query: [paste query here]
+```
 
-### General Settings
+#### Test Generation
+```
+> Write tests for: [paste code here]
+> Generate Jest tests for this React component: [paste component here]
+```
 
-- **Log Level**
-  - Description: Sets the verbosity of the log output.
-  - Options: `debug`, `info`, `warn`, `error`
-  - Default: `info`
+## Architecture
 
-- **Dry Run**
-  - Description: Simulate the commands without executing them.
-  - Options: `true`, `false`
-  - Default: `false`
+CodeSH works in a four-step process:
+1. **Start**: Parse the user's request.
+2. **Plan**: Create a plan to fulfill the request.
+3. **Action**: Execute the appropriate tool or command.
+4. **Observe**: Analyze the results and provide feedback.
 
-### Backup Settings
+### Available Tools
 
-- **Compression**
-  - Description: Enable compression for backups.
-  - Options: `zip`, `tar`, `none`
-  - Default: `zip`
+- `execute_command`: Executes a shell command directly.
+- `execute_long_running_command`: Executes commands with real-time feedback.
+- `generate_command`: Converts a description into a shell command.
+- `generate_code`: Creates code based on descriptions.
+- `generate_project`: Builds complete project structures.
+- `explain_code`: Provides detailed code explanations.
+- `improve_code`: Suggests improvements for existing code.
+- `generate_test`: Creates test cases for code.
 
-- **Encryption**
-  - Description: Protect backups using encryption.
-  - Options: `aes256`, `none`
-  - Default: `none`
+## Dependencies
 
-### Compile Settings
+- Python 3.7+
+- OpenAI API (GPT-4o model)
+- python-dotenv
 
-- **Optimization Level**
-  - Description: Adjust the optimization level of the compilation.
-  - Options: `O0`, `O1`, `O2`, `O3`
-  - Default: `O2`
+## Security Notes
 
-- **Target Platform**
-  - Description: Specify the target platform for the build.
-  - Options: `linux`, `windows`, `macos`
-  - Default: `linux`
+- CodeSH checks commands for potentially dangerous operations
+- Avoids executing sudo or system-modifying commands
+- Always reviews generated commands before execution
 
-## Environment Setup
+## Limitations
 
-To use codesh, ensure the following prerequisites are met:
-
-1. **Operating System**: Compatible with major operating systems including Linux, Windows, and macOS.
-
-2. **Dependencies**:
-   - `bash` 4.0 or higher
-   - `rsync` for file operations
-   - `gcc` for compilation tasks (optional, required for compile command)
-
-3. **Installation Steps**:
-   - Clone the repository:
-     ```sh
-     git clone https://github.com/username/codesh.git
-     ```
-   - Navigate into the cloned directory:
-     ```sh
-     cd codesh
-     ```
-   - Run the install script:
-     ```sh
-     ./install.sh
-     ```
-
-4. **Environment Variables**:
-   - `CODESH_CONFIG`: Path to a custom config file.
-   - `CODESH_LOG_DIR`: Directory for log storage.
+- Requires an active OpenAI API key and internet connection
+- Generated code may need adjustment for specific use cases
+- Limited to operations allowed by the system's user permissions
 
 ## Contributing
 
-Contributions are welcome! Please read the contributing guidelines before submitting a pull request.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
-
-This project is licensed under the MIT License.
