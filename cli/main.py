@@ -160,12 +160,17 @@ def detect_project_type(project_description: str) -> str:
         Based on this project description, determine what type of project it is and how it should be created.
         Project description: "{project_description}"
         
+        For Express.js projects, ALWAYS use the standard npm init approach followed by manual installation 
+        of dependencies (NOT express-generator).
+        
         Return a JSON object with the following structure:
         {{
             "project_type": "react|vue|angular|nextjs|nuxt|express|flask|django|...",
             "use_cli": true|false,
             "cli_commands": ["command 1", "command 2", ...] if use_cli is true,
             "package_manager": "npm|yarn|pnpm",
+            "custom_installation": true|false,
+            "dependencies": ["dep1", "dep2", ...] if custom_installation is true
         }}
         
         Only provide the JSON without any explanations or additional text.
@@ -196,6 +201,14 @@ def create_project_using_cli(project_info, project_path):
         
         print(f"\n📦 Creating {project_type} project in {project_path}...\n")
         
+        # Check if it's an Express project that needs special handling
+        if project_type.lower() == "express":
+            return create_express_project(project_path, project_info)
+        
+        # Check if it's a Node.js project that needs special dependency handling
+        if project_info.get("custom_installation", False):
+            return create_custom_node_project(project_path, project_info)
+        
         # Execute each CLI command with real-time feedback
         for i, command in enumerate(cli_commands):
             print(f"\n[{i+1}/{len(cli_commands)}] Running: {command}\n")
@@ -206,6 +219,111 @@ def create_project_using_cli(project_info, project_path):
         return "\n\nProject creation completed successfully!"
     except Exception as e:
         return f"Error creating project using CLI: {str(e)}"
+
+def create_express_project(project_path, project_info):
+    """
+    Create an Express project using npm init and manual installation of packages.
+    """
+    try:
+        # Create directory if it doesn't exist
+        if project_path != ".":
+            mkdir_cmd = f"mkdir -p {project_path}"
+            execute_command(mkdir_cmd)
+            print(f"Created directory: {project_path}")
+
+        # Initialize npm project
+        init_cmd = f"cd {project_path} && npm init -y"
+        print("\n[1/3] Running: npm init -y")
+        result = execute_long_running_command(init_cmd)
+        print(f"\n✅ npm init completed\n")
+        
+        # Install express and core dependencies
+        deps_cmd = f"cd {project_path} && npm install express"
+        print("\n[2/3] Running: npm install express")
+        result = execute_long_running_command(deps_cmd)
+        print(f"\n✅ Express installation completed\n")
+        
+        # Install additional dependencies if specified
+        if project_info.get("dependencies"):
+            additional_deps = " ".join(project_info.get("dependencies"))
+            if additional_deps:
+                deps_cmd = f"cd {project_path} && npm install {additional_deps}"
+                print(f"\n[3/3] Running: npm install {additional_deps}")
+                result = execute_long_running_command(deps_cmd)
+                print(f"\n✅ Additional dependencies installation completed\n")
+        
+        # Create basic server.js file
+        server_file = os.path.join(project_path, "server.js")
+        server_content = generate_express_server_template()
+        
+        with open(server_file, "w") as f:
+            f.write(server_content)
+        
+        print(f"\n✅ Created Express server.js file\n")
+        
+        return "\n\nExpress project created successfully using standard npm init approach!"
+    except Exception as e:
+        return f"Error creating Express project: {str(e)}"
+
+def create_custom_node_project(project_path, project_info):
+    """
+    Create a Node.js project with custom dependency installation.
+    """
+    try:
+        # Create directory if it doesn't exist
+        if project_path != ".":
+            mkdir_cmd = f"mkdir -p {project_path}"
+            execute_command(mkdir_cmd)
+            print(f"Created directory: {project_path}")
+
+        # Initialize npm project
+        init_cmd = f"cd {project_path} && npm init -y"
+        print("\n[1/3] Running: npm init -y")
+        result = execute_long_running_command(init_cmd)
+        print(f"\n✅ npm init completed\n")
+        
+        # Install dependencies if specified
+        if project_info.get("dependencies"):
+            dependencies = " ".join(project_info.get("dependencies"))
+            if dependencies:
+                deps_cmd = f"cd {project_path} && npm install {dependencies}"
+                print(f"\n[2/3] Running: npm install {dependencies}")
+                result = execute_long_running_command(deps_cmd)
+                print(f"\n✅ Dependencies installation completed\n")
+        
+        # Execute any additional CLI commands
+        cli_commands = project_info.get("cli_commands", [])
+        for i, command in enumerate(cli_commands):
+            print(f"\n[{i+3}/{len(cli_commands)+2}] Running: {command}\n")
+            result = execute_long_running_command(command)
+            print(f"\n✅ Command completed\n")
+        
+        return "\n\nNode.js project created successfully with custom dependency installation!"
+    except Exception as e:
+        return f"Error creating custom Node.js project: {str(e)}"
+
+def generate_express_server_template():
+    """
+    Generate a basic Express server template.
+    """
+    return '''const express = require('express');
+const app = express();
+const port = process.env.PORT || 3000;
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Routes
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
+
+// Start server
+app.listen(port, () => {
+  console.log(`Server listening at http://localhost:${port}`);
+});
+'''
 
 def generate_project(project_description: str, project_path: str = ".") -> str:
     """
@@ -220,20 +338,23 @@ def generate_project(project_description: str, project_path: str = ".") -> str:
         print("\n🔍 Analyzing project requirements...")
         
         # If we should use CLI commands (like npm create vite@latest)
-        if isinstance(project_info, dict) and project_info.get("use_cli", False):
-            print(f"\n🚀 This appears to be a {project_info.get('project_type', 'framework')} project. Using CLI tools...")
+        if isinstance(project_info, dict) and (project_info.get("use_cli", False) or project_info.get("project_type", "").lower() == "express"):
+            print(f"\n🚀 This appears to be a {project_info.get('project_type', 'framework')} project. Using appropriate setup...")
             return create_project_using_cli(project_info, project_path)
         
         print("\n📂 Generating project structure...")
         
         # Otherwise, generate a series of commands to create the project structure
         prompt = f"""
-        For the project described as and use the Standard command(eg for express npm init then all deps): "{project_description}" to be created in path "{project_path}"
+        For the project described as: "{project_description}" to be created in path "{project_path}"
         
         Generate a series of shell commands to:
         1. Create the necessary directory structure
         2. Create all required files with their content
         3. Include appropriate configuration files
+        
+        If this is a Node.js project, ALWAYS use npm init -y first, then install dependencies manually.
+        For Express projects, DO NOT use express-generator, instead use npm init and npm install express.
         
         Format the response as a list of commands, one per line.
         Each file content should be created using echo with heredoc or similar techniques.
@@ -377,8 +498,9 @@ system_prompt = f"""
     - NEVER execute sudo commands or any commands that could harm the system.
     - Be helpful and informative about code generation and programming concepts.
     - Give clear explanations of what each action does.
-    - If creating a project using a specific framework (React, Vue, etc.), use the generate_project function
-      which will detect if CLI commands should be used for proper project setup.
+    - For Express.js projects, ALWAYS use the standard npm init approach followed by manual installation 
+      of dependencies (NOT express-generator).
+    - For Node.js projects, ensure dependencies are properly installed with npm.
     - For file and directory operations, use generate_command to get the appropriate shell command.
     - For simple commands, use execute_command.
     - For potentially long-running commands, use execute_long_running_command to show real-time progress.
@@ -455,6 +577,7 @@ def main():
             print("  - Generate code: 'Create a function to calculate Fibonacci numbers'")
             print("  - Create files: 'Create a file named app.py with a Flask app'")
             print("  - Generate projects: 'Create a React todo app with Vite and Tailwind in ./todo-app'")
+            print("  - Generate Express projects: 'Create an Express server with MongoDB in ./api' (uses npm init approach)")
             print("  - Explain code: 'Explain this code: <paste code here>'")
             print("  - Improve code: 'Improve this code for performance: <paste code here>'")
             print("  - Generate tests: 'Write tests for: <paste code here>'")

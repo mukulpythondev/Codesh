@@ -2,6 +2,10 @@
 
 A powerful AI-powered code generation and project scaffolding tool.
 
+# Demonstration 
+
+- (Youtube)[https://youtu.be/x8tT4yVOAOE]
+
 ## Overview
 
 CodeSH is an intelligent command-line tool that helps developers:
